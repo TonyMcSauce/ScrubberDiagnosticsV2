@@ -1,0 +1,476 @@
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Barlow+Condensed:wght@300;400;500;600;700;800&display=swap');
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#ECEAE3;
+  --surface:#F7F5F0;
+  --ink:#1A1A18;
+  --ink2:#4A4A47;
+  --ink3:#888780;
+  --border:#2C2C2A;
+  --blight:#C8C6BE;
+  --red:#C8372D;--red-bg:#FCECEA;--red-mid:#E85A52;
+  --amber:#B8720A;--amber-bg:#FDF3E3;--amber-mid:#EF9F27;
+  --green:#3A6B12;--green-bg:#EEF6E3;
+  --blue:#1055A0;--blue-bg:#E8F1FB;
+  --mono:'Space Mono',monospace;
+  --head:'Barlow Condensed',sans-serif;
+}
+.root{font-family:var(--head);color:var(--ink);background:var(--bg);}
+
+.titlebar{background:var(--ink);padding:9px 14px;display:flex;align-items:center;justify-content:space-between;}
+.t-left{display:flex;align-items:baseline;gap:10px;}
+.t-appname{font-family:var(--head);font-weight:800;font-size:15px;color:#fff;letter-spacing:.08em;text-transform:uppercase;}
+.t-version{font-family:var(--mono);font-size:8px;color:#888780;letter-spacing:.1em;}
+.t-right{font-family:var(--mono);font-size:8px;color:#888780;text-align:right;line-height:1.6;}
+
+.layout{display:grid;grid-template-columns:210px 1fr 270px;min-height:580px;border:2px solid var(--border);background:var(--surface);}
+
+.col-left{border-right:2px solid var(--border);display:flex;flex-direction:column;background:var(--surface);}
+.col-mid{border-right:2px solid var(--border);display:flex;flex-direction:column;}
+.col-right{display:flex;flex-direction:column;}
+
+.col-hdr{padding:7px 11px;border-bottom:2px solid var(--border);background:var(--ink);display:flex;align-items:center;justify-content:space-between;}
+.col-hdr span{font-family:var(--head);font-weight:700;font-size:10px;color:#fff;letter-spacing:.14em;text-transform:uppercase;}
+.col-hdr .badge{font-family:var(--mono);font-size:8px;color:#888780;}
+
+.cat-label{padding:5px 11px 3px;font-family:var(--mono);font-size:8px;color:var(--ink3);letter-spacing:.1em;text-transform:uppercase;border-bottom:1px solid var(--blight);background:var(--bg);}
+
+.sym-item{padding:8px 11px;border-bottom:1px solid var(--blight);cursor:pointer;display:flex;align-items:flex-start;gap:8px;transition:background .1s;}
+.sym-item:hover{background:var(--amber-bg);}
+.sym-item.active{background:var(--ink);color:#fff;}
+.sym-dot{width:7px;height:7px;border-radius:50%;margin-top:5px;flex-shrink:0;}
+.sym-title{font-size:12px;font-weight:700;line-height:1.3;font-family:var(--head);}
+.sym-item.active .sym-title{color:#fff;}
+.sym-chip{font-family:var(--mono);font-size:8px;padding:1px 5px;margin-top:3px;display:inline-block;border-radius:2px;}
+
+.schematic{width:100%;flex:1;}
+
+.statusbar{padding:5px 11px;border-top:2px solid var(--border);background:var(--ink);display:flex;gap:14px;flex-wrap:wrap;}
+.sbar-item{display:flex;align-items:center;gap:5px;}
+.sbar-dot{width:5px;height:5px;border-radius:50%;}
+.sbar-txt{font-family:var(--mono);font-size:8px;color:#B4B2A9;}
+
+.diag-scroll{flex:1;overflow-y:auto;padding:10px;}
+.diag-empty{padding:14px 10px;color:var(--ink3);font-size:11px;line-height:1.7;}
+.diag-sym-title{font-family:var(--head);font-size:10px;font-weight:700;letter-spacing:.1em;color:var(--ink3);text-transform:uppercase;margin-bottom:8px;}
+
+.fault-block{border:1.5px solid var(--border);margin-bottom:9px;}
+.fault-top{padding:6px 9px;border-bottom:1px solid var(--blight);display:flex;align-items:center;gap:7px;}
+.f-rank{font-family:var(--mono);font-size:9px;font-weight:700;padding:2px 5px;background:var(--ink);color:#fff;flex-shrink:0;}
+.f-name{font-size:12px;font-weight:700;flex:1;line-height:1.25;}
+.f-lk{font-family:var(--mono);font-size:8px;font-weight:700;padding:2px 6px;flex-shrink:0;}
+.lk-H{background:var(--red-bg);color:var(--red);}
+.lk-M{background:var(--amber-bg);color:var(--amber);}
+.lk-L{background:var(--green-bg);color:var(--green);}
+
+.fault-body{padding:7px 9px;}
+.sec-label{font-family:var(--mono);font-size:8px;font-weight:700;letter-spacing:.1em;color:var(--ink3);text-transform:uppercase;margin:5px 0 3px;}
+.mrow{display:flex;align-items:baseline;gap:5px;padding:3px 0;border-bottom:1px solid var(--blight);}
+.mrow:last-of-type{border-bottom:none;}
+.m-port{font-family:var(--mono);font-size:9px;color:var(--ink2);min-width:52px;flex-shrink:0;}
+.m-desc{font-size:10px;flex:1;line-height:1.3;}
+.m-val{font-family:var(--mono);font-size:8px;font-weight:700;padding:2px 5px;flex-shrink:0;white-space:nowrap;}
+.mv-warn{background:var(--red-bg);color:var(--red);}
+.mv-caution{background:var(--amber-bg);color:var(--amber);}
+.mv-ok{background:var(--green-bg);color:var(--green);}
+.mv-info{background:var(--blue-bg);color:var(--blue);}
+
+.step{font-size:10px;padding:3px 0 3px 9px;border-left:2.5px solid var(--amber-mid);margin-bottom:3px;line-height:1.4;color:var(--ink2);}
+
+.cascade-banner{margin-bottom:8px;padding:7px 9px;border:1.5px solid var(--amber-mid);background:var(--amber-bg);}
+.cb-label{font-family:var(--mono);font-size:8px;font-weight:700;color:var(--amber);letter-spacing:.08em;text-transform:uppercase;margin-bottom:3px;}
+.cb-text{font-size:10px;color:var(--amber);line-height:1.4;}
+
+.hl-pulse{animation:hl 1.4s ease-in-out infinite;}
+@keyframes hl{0%,100%{opacity:1;}50%{opacity:.35;}}
+</style>
+
+<h2 class="sr-only">ScrubberDiagnostix v2 - SP750 pump and CA 100-100 motor hydraulic drive fault reference tool</h2>
+<div class="root">
+<div class="titlebar">
+  <div class="t-left">
+    <span class="t-appname">ScrubberDiagnostix</span>
+    <span class="t-version">v2.0 · JWANENG MINE</span>
+  </div>
+  <div class="t-right">SP 750 · CA 100-100 ×4<br>HYDROSTATIC DRIVE REF</div>
+</div>
+
+<div class="layout">
+
+  <div class="col-left">
+    <div class="col-hdr"><span>Observed Symptom</span><span class="badge" id="symcount"></span></div>
+    <div id="symList" style="flex:1;overflow-y:auto;"></div>
+  </div>
+
+  <div class="col-mid">
+    <div class="col-hdr"><span>System Schematic</span><span class="badge">SP750 → 4× CA100-100</span></div>
+    <svg class="schematic" id="svg" viewBox="0 0 500 490" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <marker id="ah" markerWidth="7" markerHeight="7" refX="3.5" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 Z" fill="#C8372D"/></marker>
+        <marker id="ab" markerWidth="7" markerHeight="7" refX="3.5" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 Z" fill="#1055A0"/></marker>
+        <marker id="ag" markerWidth="7" markerHeight="7" refX="3.5" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 Z" fill="#888780"/></marker>
+      </defs>
+
+      <!-- ── SP750 pump block ── -->
+      <rect x="14" y="182" width="106" height="78" fill="#1A1A18" stroke="#1A1A18" stroke-width="1.5" rx="2"/>
+      <text x="67" y="202" text-anchor="middle" font-family="'Barlow Condensed',sans-serif" font-weight="800" font-size="13" fill="white">SP 750</text>
+      <text x="67" y="216" text-anchor="middle" font-family="'Space Mono',monospace" font-size="7.5" fill="#B4B2A9">750 cm³/rev  700 kW</text>
+      <text x="67" y="228" text-anchor="middle" font-family="'Space Mono',monospace" font-size="7.5" fill="#B4B2A9">p_nom 350 bar</text>
+      <text x="67" y="240" text-anchor="middle" font-family="'Space Mono',monospace" font-size="7.5" fill="#B4B2A9">n_max 1600 rpm</text>
+      <text x="67" y="252" text-anchor="middle" font-family="'Space Mono',monospace" font-size="7.5" fill="#B4B2A9">p_max 400 bar</text>
+
+      <!-- EP solenoid band -->
+      <rect x="14" y="158" width="106" height="18" rx="2" fill="none" stroke="#EF9F27" stroke-width="1.5" stroke-dasharray="4,2"/>
+      <text x="67" y="171" text-anchor="middle" font-family="'Barlow Condensed',sans-serif" font-size="9" fill="#B8720A" font-weight="700">EP SOLENOID A / B</text>
+
+      <!-- Boost pump block -->
+      <rect x="14" y="266" width="106" height="20" rx="2" fill="#4A4A47" stroke="#1A1A18" stroke-width="1"/>
+      <text x="67" y="280" text-anchor="middle" font-family="'Barlow Condensed',sans-serif" font-size="9" fill="#D3D1C7">BOOST PUMP · 143 cc/rev</text>
+
+      <!-- MK4 test point -->
+      <circle cx="67" cy="294" r="5" fill="#EF9F27" stroke="#B8720A" stroke-width="1"/>
+      <text x="67" y="308" text-anchor="middle" font-family="'Space Mono',monospace" font-size="7" fill="#888780">MK4 ≥20 bar</text>
+
+      <!-- High-pressure line PORT A -->
+      <line x1="120" y1="200" x2="190" y2="200" stroke="#C8372D" stroke-width="3" marker-end="url(#ah)"/>
+      <text x="155" y="194" text-anchor="middle" font-family="'Space Mono',monospace" font-size="7.5" fill="#C8372D" font-weight="700">A  HP</text>
+
+      <!-- Return line PORT B -->
+      <line x1="190" y1="222" x2="120" y2="222" stroke="#1055A0" stroke-width="2" marker-end="url(#ab)"/>
+      <text x="155" y="237" text-anchor="middle" font-family="'Space Mono',monospace" font-size="7.5" fill="#1055A0">B  LP</text>
+
+      <!-- Manifold -->
+      <rect x="190" y="178" width="14" height="68" rx="2" fill="#888780" stroke="#1A1A18" stroke-width="1.5"/>
+      <text x="197" y="290" text-anchor="middle" font-family="'Barlow Condensed',sans-serif" font-size="7" fill="#4A4A47" transform="rotate(-90,197,290)">MANIFOLD</text>
+
+      <!-- Lines to 4 motors -->
+      <line x1="204" y1="191" x2="270" y2="88"  stroke="#C8372D" stroke-width="2.5" marker-end="url(#ah)"/>
+      <line x1="270" y1="110" x2="204" y2="207" stroke="#1055A0" stroke-width="1.5"/>
+
+      <line x1="204" y1="207" x2="270" y2="172" stroke="#C8372D" stroke-width="2.5" marker-end="url(#ah)"/>
+      <line x1="270" y1="192" x2="204" y2="220" stroke="#1055A0" stroke-width="1.5"/>
+
+      <line x1="204" y1="224" x2="270" y2="286" stroke="#C8372D" stroke-width="2.5" marker-end="url(#ah)"/>
+      <line x1="270" y1="306" x2="204" y2="237" stroke="#1055A0" stroke-width="1.5"/>
+
+      <line x1="204" y1="238" x2="270" y2="374" stroke="#C8372D" stroke-width="2.5" marker-end="url(#ah)"/>
+      <line x1="270" y1="392" x2="204" y2="250" stroke="#1055A0" stroke-width="1.5"/>
+
+      <!-- ── Motor blocks ── -->
+      <!-- M1 Drive End #1 -->
+      <rect id="bm1" x="270" y="58" width="96" height="56" rx="2" fill="#F7F5F0" stroke="#2C2C2A" stroke-width="1.5"/>
+      <text x="318" y="75" text-anchor="middle" font-family="'Barlow Condensed',sans-serif" font-weight="800" font-size="10.5" fill="#1A1A18">CA 100-100</text>
+      <text x="318" y="87" text-anchor="middle" font-family="'Space Mono',monospace" font-size="7" fill="#4A4A47">DRIVE END #1</text>
+      <text x="318" y="98" text-anchor="middle" font-family="'Space Mono',monospace" font-size="6.5" fill="#888780">100 Nm/bar · 270 rpm</text>
+      <text x="318" y="108" text-anchor="middle" font-family="'Space Mono',monospace" font-size="6.5" fill="#888780">33 kNm · 350 bar max</text>
+
+      <!-- M2 Drive End #2 -->
+      <rect id="bm2" x="270" y="148" width="96" height="56" rx="2" fill="#F7F5F0" stroke="#2C2C2A" stroke-width="1.5"/>
+      <text x="318" y="165" text-anchor="middle" font-family="'Barlow Condensed',sans-serif" font-weight="800" font-size="10.5" fill="#1A1A18">CA 100-100</text>
+      <text x="318" y="177" text-anchor="middle" font-family="'Space Mono',monospace" font-size="7" fill="#4A4A47">DRIVE END #2</text>
+      <text x="318" y="188" text-anchor="middle" font-family="'Space Mono',monospace" font-size="6.5" fill="#888780">100 Nm/bar · 270 rpm</text>
+      <text x="318" y="198" text-anchor="middle" font-family="'Space Mono',monospace" font-size="6.5" fill="#888780">33 kNm · 350 bar max</text>
+
+      <!-- M3 Non-Drive End #3 -->
+      <rect id="bm3" x="270" y="258" width="96" height="56" rx="2" fill="#F7F5F0" stroke="#2C2C2A" stroke-width="1.5"/>
+      <text x="318" y="275" text-anchor="middle" font-family="'Barlow Condensed',sans-serif" font-weight="800" font-size="10.5" fill="#1A1A18">CA 100-100</text>
+      <text x="318" y="287" text-anchor="middle" font-family="'Space Mono',monospace" font-size="7" fill="#4A4A47">NON-DRIVE END #3</text>
+      <text x="318" y="298" text-anchor="middle" font-family="'Space Mono',monospace" font-size="6.5" fill="#888780">100 Nm/bar · 270 rpm</text>
+      <text x="318" y="308" text-anchor="middle" font-family="'Space Mono',monospace" font-size="6.5" fill="#888780">33 kNm · 350 bar max</text>
+
+      <!-- M4 Non-Drive End #4 -->
+      <rect id="bm4" x="270" y="348" width="96" height="56" rx="2" fill="#F7F5F0" stroke="#2C2C2A" stroke-width="1.5"/>
+      <text x="318" y="365" text-anchor="middle" font-family="'Barlow Condensed',sans-serif" font-weight="800" font-size="10.5" fill="#1A1A18">CA 100-100</text>
+      <text x="318" y="377" text-anchor="middle" font-family="'Space Mono',monospace" font-size="7" fill="#4A4A47">NON-DRIVE END #4</text>
+      <text x="318" y="388" text-anchor="middle" font-family="'Space Mono',monospace" font-size="6.5" fill="#888780">100 Nm/bar · 270 rpm</text>
+      <text x="318" y="398" text-anchor="middle" font-family="'Space Mono',monospace" font-size="6.5" fill="#888780">33 kNm · 350 bar max</text>
+
+      <!-- Shaft lines to drum -->
+      <line x1="366" y1="86"  x2="415" y2="228" stroke="#1A1A18" stroke-width="1.5" stroke-dasharray="5,3"/>
+      <line x1="366" y1="176" x2="415" y2="234" stroke="#1A1A18" stroke-width="1.5" stroke-dasharray="5,3"/>
+      <line x1="366" y1="286" x2="415" y2="248" stroke="#1A1A18" stroke-width="1.5" stroke-dasharray="5,3"/>
+      <line x1="366" y1="376" x2="415" y2="254" stroke="#1A1A18" stroke-width="1.5" stroke-dasharray="5,3"/>
+
+      <!-- Drum -->
+      <rect id="bdrum" x="410" y="178" width="82" height="110" rx="8" fill="#ECEAE3" stroke="#1A1A18" stroke-width="2"/>
+      <text x="451" y="222" text-anchor="middle" font-family="'Barlow Condensed',sans-serif" font-weight="800" font-size="13" fill="#1A1A18">SCRUBBER</text>
+      <text x="451" y="237" text-anchor="middle" font-family="'Barlow Condensed',sans-serif" font-weight="800" font-size="13" fill="#1A1A18">DRUM</text>
+      <text x="451" y="252" text-anchor="middle" font-family="'Space Mono',monospace" font-size="7.5" fill="#888780">ROTARY MILL</text>
+      <circle cx="451" cy="266" r="6" fill="none" stroke="#EF9F27" stroke-width="1.5"/>
+      <line x1="451" y1="260" x2="451" y2="272" stroke="#EF9F27" stroke-width="1.5"/>
+      <line x1="445" y1="266" x2="457" y2="266" stroke="#EF9F27" stroke-width="1.5"/>
+
+      <!-- Drain line label -->
+      <text x="16" y="446" font-family="'Space Mono',monospace" font-size="7" fill="#888780">CASE DRAIN  D1/D2/D3 → TANK</text>
+      <line x1="16" y1="448" x2="165" y2="448" stroke="#888780" stroke-width="1" stroke-dasharray="3,2" marker-end="url(#ag)"/>
+
+      <!-- Drive/Non-drive labels -->
+      <text x="196" y="175" font-family="'Barlow Condensed',sans-serif" font-size="8" fill="#888780" transform="rotate(-90,196,175)">DRIVE</text>
+      <text x="196" y="270" font-family="'Barlow Condensed',sans-serif" font-size="8" fill="#888780" transform="rotate(-90,196,270)">NON-DRV</text>
+
+      <!-- Highlight rings (hidden) -->
+      <rect id="hl-pump" x="10" y="154" width="114" height="138" rx="4" fill="none" stroke="#EF9F27" stroke-width="3" opacity="0" pointer-events="none"/>
+      <rect id="hl-m1"   x="266" y="54"  width="104" height="64" rx="4" fill="none" stroke="#EF9F27" stroke-width="2.5" opacity="0" pointer-events="none"/>
+      <rect id="hl-m2"   x="266" y="144" width="104" height="64" rx="4" fill="none" stroke="#EF9F27" stroke-width="2.5" opacity="0" pointer-events="none"/>
+      <rect id="hl-m3"   x="266" y="254" width="104" height="64" rx="4" fill="none" stroke="#EF9F27" stroke-width="2.5" opacity="0" pointer-events="none"/>
+      <rect id="hl-m4"   x="266" y="344" width="104" height="64" rx="4" fill="none" stroke="#EF9F27" stroke-width="2.5" opacity="0" pointer-events="none"/>
+      <rect id="hl-drum" x="406" y="174" width="90" height="118" rx="10" fill="none" stroke="#C8372D" stroke-width="3" opacity="0" pointer-events="none"/>
+      <rect id="hl-lines" x="118" y="176" width="88" height="70" rx="3" fill="none" stroke="#C8372D" stroke-width="2.5" opacity="0" pointer-events="none"/>
+    </svg>
+    <div class="statusbar">
+      <div class="sbar-item"><div class="sbar-dot" style="background:#3A6B12"></div><span class="sbar-txt">A-port nom: 350 bar</span></div>
+      <div class="sbar-item"><div class="sbar-dot" style="background:#EF9F27"></div><span class="sbar-txt">MK4 min: 20 bar</span></div>
+      <div class="sbar-item"><div class="sbar-dot" style="background:#C8372D"></div><span class="sbar-txt">Case max: 90°C / 8 bar</span></div>
+      <div class="sbar-item"><div class="sbar-dot" style="background:#1055A0"></div><span class="sbar-txt">Motor case: 3 bar &lt;280rpm</span></div>
+    </div>
+  </div>
+
+  <div class="col-right">
+    <div class="col-hdr"><span>Diagnostic Overlay</span></div>
+    <div class="diag-scroll" id="diagPanel">
+      <div class="diag-empty">
+        <div style="font-family:var(--head);font-size:13px;font-weight:700;margin-bottom:6px;">SELECT A SYMPTOM</div>
+        <div>Pick an observed symptom from the left. Fault candidates appear here ranked by likelihood, with exact measurement ports and datasheet threshold values.</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<script>
+const SYMPTOMS = [
+  {
+    id:'p1', cat:'PRESSURE', label:'No boost + no main pressure', chip:'TOTAL LOSS', col:'#C8372D',
+    hl:['pump'],
+    cascade:'Complete hydraulic failure. No pilot pressure means EP control cannot stroke the swashplate. No swashplate stroke means zero main flow. Diagnose boost circuit first before assuming pump failure.',
+    faults:[
+      {rank:1,name:'Suction starvation / prime lost',lk:'H',measures:[
+        {port:'Port S',desc:'Suction pressure at pump inlet',val:'< 0.8 bar abs = FAULT',type:'warn'},
+        {port:'MS',desc:'Suction measuring port',val:'Min 0.8 bar absolute',type:'warn'},
+        {port:'Reservoir',desc:'Oil level check',val:'Check immediately',type:'warn'}
+      ],steps:['Measure at MS suction test point - below 0.8 bar absolute indicates starved inlet','Check hydraulic reservoir level and fill if low','Inspect suction line for collapsed hose, blocked strainer, or closed isolation valve','Air ingress at suction fittings will also drop boost - check all suction-side joints']},
+      {rank:2,name:'Boost pump mechanical failure',lk:'H',measures:[
+        {port:'ME3',desc:'Boost pump outlet pressure',val:'Should be >20 bar',type:'warn'},
+        {port:'MK4',desc:'Charge/flushing pressure',val:'MIN 20 bar SP750',type:'warn'},
+        {port:'S',desc:'Suction port inlet',val:'>0.8 bar absolute',type:'info'}
+      ],steps:['SP750 boost pump is a 143 cc/rev gerotor integrated in pump body','If suction is OK but ME3 reads zero, gerotor has failed internally','Listen for high-pitched whine at startup - characteristic of gerotor cavitation','Gerotor failure is often preceded by days of noise - review recent observations']},
+      {rank:3,name:'E1/E2 filter passage blocked',lk:'H',measures:[
+        {port:'E1 / E2',desc:'Filter port passage',val:'Plugged = ONLY visible sign',type:'warn'},
+        {port:'ME3',desc:'Boost pressure collapses',val:'Drops to near zero',type:'warn'}
+      ],steps:['CRITICAL: If E1 and E2 ports are both plugged on the SP750, the internal channel is blocked','This destroys the boost pump if pump is run on a test bench without removing plugs','The blocked passage is the ONLY visible indicator of this fault - check first','Open E1/E2 if fitted with external charge filter to restore flow path']}
+    ]
+  },
+  {
+    id:'p2', cat:'PRESSURE', label:'Boost OK — no main pressure', chip:'CTRL FAULT', col:'#C8372D',
+    hl:['pump','lines'],
+    cascade:'Boost circuit is healthy (pilot pressure available at ME3/MK4) but swashplate is not producing main flow. Control circuit is receiving pressure but not acting on it — fault is in the EP solenoid, control valve, or swashplate mechanism.',
+    faults:[
+      {rank:1,name:'EP solenoid not commanding displacement',lk:'H',measures:[
+        {port:'XA or XB',desc:'Solenoid command current',val:'Target 200–600 mA',type:'warn'},
+        {port:'XA or XB',desc:'Solenoid supply voltage',val:'24 V DC required',type:'info'},
+        {port:'M1 / M2',desc:'Control chamber pressure',val:'Must be >30+(Pn-Ps) bar',type:'warn'}
+      ],steps:['Check PLC/drive output current at XA or XB solenoid connector with clamp meter','Zero current = swashplate stays at neutral by design (safe fail on power loss)','Measure solenoid coil resistance - nominal approx 23 Ω, open circuit = coil failed','Verify DIN 175301-803 connector is fully seated and undamaged']},
+      {rank:2,name:'EP control spool contaminated / stuck',lk:'H',measures:[
+        {port:'ME3',desc:'Control pressure available',val:'>30 bar confirmed',type:'ok'},
+        {port:'M1 / M2',desc:'Stroking chamber response',val:'No change with current',type:'warn'},
+        {port:'Swashplate',desc:'Displacement indicator',val:'Reads 0° — no stroke',type:'warn'}
+      ],steps:['Boost is confirmed present but control spool is not actuating','Contamination in hydraulic fluid is the primary cause - check ISO 4406 cleanliness','Sizes 500/750 EP control has 0.2 mm dirt filter at position 10 - inspect for blockage','SP750 safety note: contaminated valve spools can stick in position permanently - flush system']},
+      {rank:3,name:'High-pressure line fault (burst / isolation)',lk:'M',measures:[
+        {port:'MA or MB',desc:'Working line pressure at pump',val:'Compare pump vs motor side',type:'info'},
+        {port:'T1 (motor)',desc:'Motor inlet pressure',val:'Should equal MA/MB',type:'info'}
+      ],steps:['Confirm pump IS stroking (swashplate indicator > 0°) before investigating lines','If pump output port MA shows pressure but motor T1 shows zero - line fault between manifold and motor','Inspect high-pressure hoses and fittings for leakage or failure','Check manifold connections and isolation valves if fitted']}
+    ]
+  },
+  {
+    id:'p3', cat:'PRESSURE', label:'Low boost — low main pressure', chip:'CASCADE', col:'#B8720A',
+    hl:['pump','m1','m2','m3','m4'],
+    cascade:'Classic cascade: degraded boost circuit is reducing available pilot pressure. The EP control cannot fully stroke the swashplate, so main pressure is weak but not zero. This is a warning state — if boost falls further, main pressure will collapse completely.',
+    faults:[
+      {rank:1,name:'Boost pressure marginal / decaying',lk:'H',measures:[
+        {port:'MK4',desc:'Flushing/charge pressure',val:'Must be ≥ 20 bar SP750',type:'warn'},
+        {port:'ME3',desc:'Boost pump outlet',val:'Trending downward?',type:'caution'},
+        {port:'S',desc:'Suction inlet',val:'Check for partial blockage',type:'info'}
+      ],steps:['Measure MK4 continuously - if trending down, problem is worsening','SP750 series 30: boost minimum is 20 bar. Below this, EP control cannot reliably stroke','Partial suction restriction reduces gerotor inlet, drops boost proportionally','Check E1/E2 filter differential - increasing restriction will show as slow boost decay']},
+      {rank:2,name:'Control pressure relief valve drifting',lk:'M',measures:[
+        {port:'ME3',desc:'Control pressure set point',val:'Should regulate at ~32 bar',type:'info'},
+        {port:'MK4',desc:'Boost circuit charge pressure',val:'Drops as working p rises',type:'caution'}
+      ],steps:['SP750 control pressure relief valve (pos.8) regulates to ~32 bar at low working pressure','As working pressure rises, control is taken over by high-pressure check valve','If this valve drifts low, EP control gets insufficient pilot at low load conditions','Verify boost pressure increases proportionally when load is removed from drum']},
+      {rank:3,name:'Partial swashplate response',lk:'M',measures:[
+        {port:'M1 / M2',desc:'Stroking chamber pressure',val:'Low = partial stroke only',type:'caution'},
+        {port:'Swashplate',desc:'Displacement indicator angle',val:'Should reach 15° max',type:'info'},
+        {port:'MA',desc:'Main working pressure output',val:'Low but non-zero',type:'caution'}
+      ],steps:['Swashplate only partially stroking produces proportionally lower flow and pressure','Read swashplate angle indicator - if it cannot reach 15° full displacement, control fault confirmed','Increasing solenoid current command (if at setpoint) should increase displacement','If current at maximum but stroke limited - EP proportional valve is suspect']}
+    ]
+  },
+  {
+    id:'d1', cat:'DRIVE', label:'Drum not rotating', chip:'DRIVE LOSS', col:'#C8372D',
+    hl:['pump','drum'],
+    faults:[
+      {rank:1,name:'Pump swashplate at neutral',lk:'H',measures:[
+        {port:'M1 / M2',desc:'Control chamber pressure',val:'< 30 bar = no stroke',type:'warn'},
+        {port:'XA / XB',desc:'Solenoid command current',val:'EP: 200–600 mA',type:'info'},
+        {port:'Swashplate',desc:'Displacement indicator',val:'Must show > 0°',type:'warn'}
+      ],steps:['Swashplate defaults to neutral on power failure - this is by design','Check PLC solenoid output with clamp meter at XA or XB connector','Verify EP solenoid coil is intact (≈23 Ω resistance)','Confirm swashplate angle indicator shows displacement above zero']},
+      {rank:2,name:'Mechanical coupling failure',lk:'M',measures:[
+        {port:'MA / MB',desc:'Pump pressure confirms flow',val:'> 50 bar = pump OK',type:'ok'},
+        {port:'Drum',desc:'Audible rotation or vibration?',val:'Silent = mech fault',type:'warn'}
+      ],steps:['If MA/MB shows working pressure but drum is still — fault is mechanical not hydraulic','Inspect shrink disc coupling on CA 100-100 motors (shaft coupling option: shrink disc)','Check spline connection between motor cylinder block and drum shaft','A sheared coupling usually makes a loud bang at the moment of failure']}
+    ]
+  },
+  {
+    id:'d2', cat:'DRIVE', label:'Low drum speed / sluggish', chip:'SPEED LOSS', col:'#B8720A',
+    hl:['pump','m1','m2','m3','m4'],
+    faults:[
+      {rank:1,name:'Pump displacement below setpoint',lk:'H',measures:[
+        {port:'MA / MB',desc:'Working pressure differential',val:'Normal: 100–280 bar',type:'info'},
+        {port:'XA / XB',desc:'Solenoid command current',val:'Full stroke: ~600 mA',type:'info'},
+        {port:'Swashplate',desc:'Angle indicator',val:'Should be at 15° full',type:'warn'}
+      ],steps:['Verify swashplate indicator reads full 15° displacement','Check solenoid current with clamp meter - confirm command is at maximum setpoint','Inspect EP control proportional valve (pos.10 dirt filter) for contamination','PWM current regulator recommended - verify drive controller output is correct']},
+      {rank:2,name:'Motor internal leakage',lk:'M',measures:[
+        {port:'D1 (motor)',desc:'Case drain temperature',val:'> 70°C = seal risk (NBR)',type:'warn'},
+        {port:'T2 (motor)',desc:'Drain oil pressure',val:'MAX 3 bar < 280 rpm',type:'warn'},
+        {port:'D1',desc:'Drain flow volume',val:'High flow = worn internals',type:'caution'}
+      ],steps:['Measure case drain temperature at T2 Minimess on each motor individually','Worn cam rollers or pistons increase volumetric loss, reducing output speed','Compare drain temperatures across all 4 motors - hottest motor is most worn','CA 100-100 max torque 33 kNm - confirm drum is not overloaded reducing apparent speed']}
+    ]
+  },
+  {
+    id:'t1', cat:'THERMAL', label:'Oil temperature high', chip:'THERMAL', col:'#C8372D',
+    hl:['pump','m1','m2','m3','m4'],
+    faults:[
+      {rank:1,name:'System fluid overheating',lk:'H',measures:[
+        {port:'T (pump)',desc:'Pump case drain oil temp',val:'HARD LIMIT 90°C',type:'warn'},
+        {port:'T2 (motor)',desc:'Motor drain temp',val:'MAX 70°C NBR / 100°C FPM',type:'warn'},
+        {port:'MS',desc:'Suction pressure',val:'Monitor for cavitation signs',type:'info'}
+      ],steps:['SP750 absolute maximum: 90°C at any point in pump housing','Target system temperature is 50°C — ISO VG 68 gives ~40 cSt at this point','Optimum viscosity range 40–150 cSt; below 30 cSt risks service life damage','Bearing flushing at U-port (30 L/min for SP750) required if running above rated power']},
+      {rank:2,name:'Hydraulic fluid degraded or wrong grade',lk:'M',measures:[
+        {port:'Sample',desc:'Fluid viscosity at 50°C',val:'Target 40 cSt',type:'info'},
+        {port:'Sample',desc:'ISO 4406 contamination',val:'Required: 18/16/13',type:'caution'}
+      ],steps:['Sample fluid and test viscosity - wrong grade causes efficiency losses and heat','Cleanliness level ISO 4406 18/16/13 is minimum for SP750 and CA 100-100','Filter rating minimum β10 ≥ 75 required','Running below 20 cSt on non-DLC coated CA motors risks instant seizure']}
+    ]
+  },
+  {
+    id:'t2', cat:'THERMAL', label:'Motor case drain hot', chip:'MOTOR HEAT', col:'#C8372D',
+    hl:['m1','m2','m3','m4'],
+    faults:[
+      {rank:1,name:'Motor case pressure excessive',lk:'H',measures:[
+        {port:'T2 (motor)',desc:'Drain oil temperature',val:'MAX 70°C (NBR seal)',type:'warn'},
+        {port:'D1 / D2',desc:'Case drain pressure',val:'< 3 bar below 280 rpm',type:'warn'},
+        {port:'D1 peak',desc:'Peak case pressure spike',val:'ABS MAX 8 bar (<0.1s)',type:'warn'}
+      ],steps:['Measure T2 Minimess port (G1/4") on each suspect motor with pressure/temp gauge','Shared drain lines must be sized so case pressure of ALL motors stays within limit','Separate reservoir drain lines if shared line is causing back-pressure buildup','Consider bearing flushing via F3/F4 ports for sustained high-speed operation']},
+      {rank:2,name:'Internal wear — cam roller or distributor',lk:'M',measures:[
+        {port:'T1 (motor)',desc:'Inlet port temp comparison',val:'Check asymmetry across motors',type:'info'},
+        {port:'T2 (motor)',desc:'Drain flow rate',val:'Elevated = worn internals',type:'warn'}
+      ],steps:['CA 100-100 radial piston: pistons push cam rollers against the cam ring to produce torque','Worn cam rollers increase internal leakage and generate heat in the motor case','Compare drain temperatures across all 4 motors — the outlier is the faulty unit','Isolate suspect motor and confirm if remaining motors return to normal temperature']}
+    ]
+  },
+  {
+    id:'m1', cat:'MECHANICAL', label:'Uneven torque / vibration', chip:'IMBALANCE', col:'#B8720A',
+    hl:['m1','m2','m3','m4','drum'],
+    faults:[
+      {rank:1,name:'Pressure imbalance between motor pairs',lk:'H',measures:[
+        {port:'T1 each motor',desc:'Inlet pressure all 4 motors',val:'Drive pair must match',type:'info'},
+        {port:'T2 each motor',desc:'Drain temp comparison',val:'Outlier > 10°C = fault',type:'caution'}
+      ],steps:['Measure T1 Minimess inlet pressure on all 4 motors individually','Drive end pair (M1+M2) must read equal; non-drive end (M3+M4) must read equal','Each CA 100-100 produces 100 Nm/bar — any imbalance directly creates uneven drum torque','Difference > 20 bar within a pair indicates blocked line or failed distributor in that motor']},
+      {rank:2,name:'Motor distributor fault',lk:'M',measures:[
+        {port:'T2 (suspect motor)',desc:'Drain temp elevated',val:'> 10°C above siblings',type:'warn'}
+      ],steps:['Radial piston design: distributor directs oil flow to each working piston in sequence','Worn or damaged distributor causes uneven pressure pulses at drum frequency','Vibration frequency often correlates with number of pistons × rotational speed','Isolate the suspect motor and monitor if vibration characteristic changes']}
+    ]
+  },
+  {
+    id:'m2', cat:'MECHANICAL', label:'Pump hunting / instability', chip:'CTRL HUNT', col:'#B8720A',
+    hl:['pump'],
+    faults:[
+      {rank:1,name:'EP control spool contamination',lk:'H',measures:[
+        {port:'ME3 / MK4',desc:'Boost pressure stability',val:'Should be steady',type:'info'},
+        {port:'M1 / M2',desc:'Control chamber hunting',val:'Oscillates with pump',type:'warn'},
+        {port:'XA / XB',desc:'Solenoid current waveform',val:'Check for noise/oscillation',type:'info'}
+      ],steps:['Contamination causes valve spool to stick then free repeatedly — produces hunting','SP750 safety note explicitly warns: contaminated spools can permanently jam','Flush hydraulic system if contamination suspected; check ISO 4406 level','SP750 sizes 500/750: pos.10 control fluid filter may be blocked — inspect first']},
+      {rank:2,name:'Insufficient control pressure',lk:'M',measures:[
+        {port:'ME3',desc:'Control pressure supply',val:'Min 30+(Pn-Ps) bar req',type:'warn'},
+        {port:'MK4',desc:'Boost pressure',val:'Below 20 bar = hunting',type:'warn'}
+      ],steps:['Minimum EP control pressure is 30 bar + (neutral pressure minus stroking pressure)','Low or fluctuating boost causes the swashplate to hunt around the setpoint','Verify boost pressure is stable under varying load conditions','If boost drops under load, check suction restriction and gerotor condition']}
+    ]
+  }
+];
+
+const HL_IDS = {pump:'hl-pump',m1:'hl-m1',m2:'hl-m2',m3:'hl-m3',m4:'hl-m4',drum:'hl-drum',lines:'hl-lines'};
+let active = null;
+
+function clearHL(){
+  Object.values(HL_IDS).forEach(id=>{
+    const el=document.getElementById(id);
+    if(el){el.setAttribute('opacity','0');el.classList.remove('hl-pulse');}
+  });
+}
+
+function buildSymList(){
+  const cats = [...new Set(SYMPTOMS.map(s=>s.cat))];
+  const container = document.getElementById('symList');
+  container.innerHTML = cats.map(cat=>{
+    const items = SYMPTOMS.filter(s=>s.cat===cat);
+    return `<div class="cat-label">${cat}</div>` +
+      items.map(s=>`
+        <div class="sym-item${active===s.id?' active':''}" onclick="selectSym('${s.id}')">
+          <div class="sym-dot" style="background:${s.col}"></div>
+          <div>
+            <div class="sym-title">${s.label}</div>
+            <span class="sym-chip" style="${active===s.id?'background:#EF9F27;color:#1A1A18':'background:'+s.col+'1A;color:'+s.col}">${s.chip}</span>
+          </div>
+        </div>
+      `).join('');
+  }).join('');
+  document.getElementById('symcount').textContent = SYMPTOMS.length + ' faults';
+}
+
+function selectSym(id){
+  active=id;
+  buildSymList();
+  clearHL();
+  const sym=SYMPTOMS.find(s=>s.id===id);
+  if(!sym)return;
+  sym.hl.forEach(h=>{
+    const el=document.getElementById(HL_IDS[h]);
+    if(el){el.setAttribute('opacity','1');el.classList.add('hl-pulse');}
+  });
+  renderDiag(sym);
+}
+
+function renderDiag(sym){
+  const cascBanner = sym.cascade
+    ? `<div class="cascade-banner"><div class="cb-label">⚡ CASCADE LOGIC</div><div class="cb-text">${sym.cascade}</div></div>`
+    : '';
+
+  const faultHTML = sym.faults.map(f=>`
+    <div class="fault-block">
+      <div class="fault-top">
+        <span class="f-rank">#${f.rank}</span>
+        <span class="f-name">${f.name}</span>
+        <span class="f-lk lk-${f.lk}">${f.lk==='H'?'HIGH':f.lk==='M'?'MED':'LOW'}</span>
+      </div>
+      <div class="fault-body">
+        <div class="sec-label">Measure at</div>
+        ${f.measures.map(m=>`
+          <div class="mrow">
+            <span class="m-port">${m.port}</span>
+            <span class="m-desc">${m.desc}</span>
+            <span class="m-val mv-${m.type}">${m.val}</span>
+          </div>
+        `).join('')}
+        <div class="sec-label" style="margin-top:7px;">Action steps</div>
+        ${f.steps.map(s=>`<div class="step">${s}</div>`).join('')}
+      </div>
+    </div>
+  `).join('');
+
+  document.getElementById('diagPanel').innerHTML = `
+    <div class="diag-sym-title">▸ ${sym.label}</div>
+    ${cascBanner}
+    ${faultHTML}
+  `;
+}
+
+buildSymList();
+</script>
